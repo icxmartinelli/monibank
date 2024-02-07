@@ -1,6 +1,21 @@
 import ehUmCPF from "./valida-cpf.js"; // chamando a function de valida-cpf.js
 import ehMaiorDeIdade from "./valida-idade.js";
 const camposDoFormulario = document.querySelectorAll('[required]');
+const formulario = document.querySelector("[data-formulario]");
+
+formulario.addEventListener("submit", (e) => {
+    e.preventDefault(); // o default de um botão submit é recarregar a página
+    const listaRespostas = {
+        // "chave cadastro": valor do item em si;
+        "nome": e.target.elements["nome"].value,
+        "email": e.target.elements["email"].value,
+        "rg": e.target.elements["rg"].value,
+        "cpf": e.target.elements["cpf"].value,
+        "aniversario": e.target.elements["aniversario"].value
+    };
+    localStorage.setItem("cadastro", JSON.stringify(listaRespostas));
+    window.location.href = './abrir-conta-form-2.html';
+});
 
 // seleciona todos elementos 'required'
 camposDoFormulario.forEach((campo) => { // para cada um dos campos 'required'
@@ -8,7 +23,7 @@ camposDoFormulario.forEach((campo) => { // para cada um dos campos 'required'
     campo.addEventListener("invalid", evento => evento.preventDefault()); // ele oculta a mensagem padrão do HTML 5 para campo inválido campo.validity = false em alguma das propriedades de validação
 });
 
-const tiposDeEro = [
+const tiposDeErro = [
     'valueMissing',
     'typeMismatch',
     'patternMismatch',
@@ -47,12 +62,26 @@ const mensagens = {  // chave porque é objeto
     }
 }
 
-
 function verificaCampo(campo) {
+    let mensagem = "";
+    campo.setCustomValidity('');
     if (campo.name == "cpf" && campo.value.length >= 11) {
         ehUmCPF(campo); // podemos usar como função daqui porque importamos
     }
     if (campo.name == "aniversario" && campo.value != "") {
         ehMaiorDeIdade(campo);
+    }
+    tiposDeErro.forEach(erro => {
+        if (campo.validity[erro]) {
+            mensagem = mensagens[campo.name][erro];
+            console.log(mensagem);
+        }
+    });
+    const mensagemErro = campo.parentNode.querySelector('.mensagem-erro');
+    const validadorDeInput = campo.checkValidity();
+    if (!validadorDeInput) {
+        mensagemErro.textContent = mensagem;
+    } else {
+        mensagemErro.textContent = "";
     }
 }
